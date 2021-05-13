@@ -1,6 +1,6 @@
 from configuration import chunk_size, time_stamp, target, logger
 from initializer import supporting_data
-import pyodbc
+
 
 
 def extract_axes_from_cellset(raw_cellset_as_dict):

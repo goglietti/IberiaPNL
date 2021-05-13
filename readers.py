@@ -7,12 +7,12 @@ class DownloadError(Exception):
 
 def tm1_reader(tm1, mdx, name):
     logger.info(f'starting download of {name}')
-    data = try_many(tm1, mdx, name)
-    if data:
-        logger.info(f'download of {name} completed - {len(data["Cells"])} cells retrieved')
+    result = try_many(tm1, mdx, name)
+    if result:
+        logger.info(f'download of {name} completed - {len(result[1]["Cells"])} cells retrieved')
     else:
         logger.info(f'download of {name} failed - max number of attempts reached')
-    return data
+    return result
 
 
 def try_many(tm1, mdx, name):
@@ -20,7 +20,7 @@ def try_many(tm1, mdx, name):
         if i > 1:
             logger.info(f'retrying {name} - try {i} of {max_attempts}')
         try:
-            return download(tm1, mdx, name)
+            return i,download(tm1, mdx, name)
         except DownloadError as e:
             pass
     return None

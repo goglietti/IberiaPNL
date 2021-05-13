@@ -7,7 +7,7 @@ supporting_data = {}
 
 def download_parameters_cube(tm1, mdx, name):
 
-    data = tm1_reader(tm1, mdx, name)
+    tries, data = tm1_reader(tm1, mdx, name)
 
     column_axis = data['Axes'][0]
     row_axis = data['Axes'][1]

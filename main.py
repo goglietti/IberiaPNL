@@ -19,8 +19,9 @@ def worker(tm1, customer):
     start = time.time()
     cell_count = None
     status = 'FAILED'
-    data = tm1_reader(tm1, mdx, customer)
-    if data:
+    result = tm1_reader(tm1, mdx, customer)
+    if result:
+        tries,data = result
         writer(data, customer)
         logger.info(f'customer {customer} saved')
         status = 'SUCCESS'
@@ -30,7 +31,7 @@ def worker(tm1, customer):
     ended_at = time.strftime("%b %d %Y %H:%M:%S", time.gmtime(end))
     duration = end - start
     worker_info = {'customer': customer, 'count': cell_count, 'started_at': started_at, 'ended_at': ended_at,
-                   'duration': duration, 'status': status, 'thread_id': thread_id}
+                   'duration': duration, 'status': status, 'thread_id': thread_id, 'tries': tries}
     return worker_info
 
 
@@ -61,7 +62,7 @@ def main():
                                    'PC_097', 'PC_999', 'PC_077', 'PC_104', 'PC_031', 'L0_5001_F', 'L0_5003_F',
                                    'PC_117', 'L0_5002_F', 'L0_5004_F']
         # leafs = tm1.elements.get_leaf_element_names('CUST_Plan_Full', 'CUST_Plan_Full')
-        leafs = ['PC_999']
+        leafs = ['PC_999', 'PC_097']
         #leafs = ['PCEXP006']
         #leafs = from_largest_to_smaller
         logger.info(f'selected customers: {leafs}')
@@ -85,6 +86,7 @@ def main():
         df.set_index(['thread_id', 'status'], inplace=True)
         df.sort_index(inplace=True)
         df.to_csv(f'Performances/{performance_file_name}.csv')
+        return tasks_info
 
 
 if __name__ == '__main__':
@@ -94,19 +96,49 @@ if __name__ == '__main__':
     time_stamp = time.strftime("%Y-%m-%d %H:%M:%S", t)
     performance_file_name = time.strftime("%Y-%m-%d_%H-%M-%S", t)
 
-    n_runs = 1
-
+    n_runs = 2
     runs = {'number_of_runs': n_runs, 'runs': []}
-    for i in range(n_runs):
-        start = time.time()
-        main()
-        end_time = time.time()
-        total_time = f'{end_time - start}'
-        runs['runs'].append({'run': i,
-                             'total_time': total_time,
-                             'start_time': time.asctime( time.localtime(start)),
-                             'end_time': time.asctime( time.localtime(end_time))})
-        logger.info(f'total time to complete {total_time}')
     with open('Downloads/runs.json', 'w') as fp:
-        json.dump(runs, fp)
+        fp.write('{"number_of_runs": ' + str(n_runs) + ', "runs": [')
+        for i in range(n_runs):
+            start = time.time()
+            try:
+                tasks_info = main()
+            except:
+                continue
+            end_time = time.time()
+            total_time = f'{end_time - start}'
+        
+            to_write = {'run': i,
+                        'total_time': total_time,
+                        'start_time': time.asctime( time.localtime(start)),
+                        'end_time': time.asctime( time.localtime(end_time)),
+                        'infos': [{'customer': task['customer'], 'count': task['count'], 'tries': task['tries']} for task in tasks_info if task['tries'] > 1]}
+            fp.write(json.dumps(to_write))
 
+            if i < n_runs - 1:
+                fp.write(',')
+            
+            logger.info(f'total time to complete {total_time}')
+
+        fp.write(']}')
+
+
+
+    ''' --- VERSIONE DUMP INTERO ---
+
+    with open('Downloads/runs.json', 'w') as fp:
+        for i in range(n_runs):
+            start = time.time()
+            tasks_info = main()
+            end_time = time.time()
+            total_time = f'{end_time - start}'
+            runs['runs'].append({'run': i,
+                                'total_time': total_time,
+                                'start_time': time.asctime( time.localtime(start)),
+                                'end_time': time.asctime( time.localtime(end_time)),
+                                'infos': [{'customer': task['customer'], 'count': task['count'], 'tries': task['tries']} for task in tasks_info]})
+            logger.info(f'total time to complete {total_time}')
+        with open('Downloads/runs.json', 'w') as fp:
+            json.dump(runs, fp)
+    '''

@@ -61,10 +61,11 @@ def main():
                                    'PC_014', 'PC_095', 'PC_015', 'PC_099', 'PC_083', 'PC_100', 'PC_078', 'PC_018',
                                    'PC_097', 'PC_999', 'PC_077', 'PC_104', 'PC_031', 'L0_5001_F', 'L0_5003_F',
                                    'PC_117', 'L0_5002_F', 'L0_5004_F']
-        # leafs = tm1.elements.get_leaf_element_names('CUST_Plan_Full', 'CUST_Plan_Full')
-        leafs = ['PC_999', 'PC_097']
+        leafs = tm1.elements.get_leaf_element_names('CUST_Plan_Full', 'CUST_Plan_Full')
+        # leafs = ['PC_999', 'PC_097']
         #leafs = ['PCEXP006']
         #leafs = from_largest_to_smaller
+
         logger.info(f'selected customers: {leafs}')
         logger.info(f"{'=' * 100}")
 
@@ -96,7 +97,7 @@ if __name__ == '__main__':
     time_stamp = time.strftime("%Y-%m-%d %H:%M:%S", t)
     performance_file_name = time.strftime("%Y-%m-%d_%H-%M-%S", t)
 
-    n_runs = 2
+    n_runs = 1
     runs = {'number_of_runs': n_runs, 'runs': []}
     with open('Downloads/runs.json', 'w') as fp:
         fp.write('{"number_of_runs": ' + str(n_runs) + ', "runs": [')
@@ -104,8 +105,10 @@ if __name__ == '__main__':
             start = time.time()
             try:
                 tasks_info = main()
-            except:
-                continue
+            except Exception as e:
+                logger.error(e)
+                break
+
             end_time = time.time()
             total_time = f'{end_time - start}'
         

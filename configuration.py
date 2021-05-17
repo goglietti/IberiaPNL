@@ -16,7 +16,7 @@ def setup_logger(name, log_file, level=logging.INFO):
     logger = logging.getLogger(name)
     logger.setLevel(level)
     logger.addHandler(handler)
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    logger.addHandler(logging.StreamHandler())
 
     return logger
 

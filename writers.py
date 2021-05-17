@@ -19,8 +19,6 @@ def extract_element_names_from_members(members):
 def writer(data, table_name):
     if len(data['Cells']) > 0:
         csv_write(csv_buffer(shaped(record_as_dict(records(data)))), table_name)
-    else:
-        raise Exception(f'tearget must be csv or db, got {target}')
 
 
 def csv_write(data, table_name):
